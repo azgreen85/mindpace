@@ -1,0 +1,648 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --bg2: #141720;
+    --bg3: #1c2030;
+    --bg4: #232840;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8eaf0;
+    --text2: #8890a8;
+    --text3: #505570;
+    --accent: #7c9fff;
+    --accent2: #4a7aff;
+    --accent-glow: rgba(74,122,255,0.18);
+    --pacer: #64d9a8;
+    --pacer-glow: rgba(100,217,168,0.18);
+    --stop: #ff7c7c;
+    --amber: #ffc664;
+  }
+
+  body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  .app { min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* AUTH */
+  .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; background: var(--bg); }
+  .auth-card { width: 100%; max-width: 400px; }
+  .auth-logo { text-align: center; margin-bottom: 2.5rem; }
+  .auth-logo h1 { font-family: 'DM Serif Display', serif; font-size: 2.4rem; color: var(--text); letter-spacing: -0.02em; }
+  .auth-logo p { color: var(--text2); font-size: 0.875rem; margin-top: 0.25rem; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 500; }
+  .auth-tabs { display: flex; background: var(--bg2); border-radius: 10px; padding: 4px; margin-bottom: 1.75rem; border: 1px solid var(--border); }
+  .auth-tab { flex: 1; padding: 0.55rem; text-align: center; border-radius: 7px; cursor: pointer; font-size: 0.875rem; color: var(--text2); transition: all 0.2s; font-weight: 500; }
+  .auth-tab.active { background: var(--bg4); color: var(--text); }
+  .field { margin-bottom: 1rem; }
+  .field label { display: block; font-size: 0.78rem; color: var(--text2); margin-bottom: 0.4rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+  .field input { width: 100%; padding: 0.7rem 0.9rem; background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+  .field input:focus { border-color: var(--accent2); }
+  .btn-primary { width: 100%; padding: 0.8rem; background: var(--accent2); border: none; border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; letter-spacing: 0.02em; margin-top: 0.5rem; }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:active { transform: scale(0.98); }
+  .auth-msg { font-size: 0.82rem; padding: 0.65rem 0.85rem; border-radius: 7px; margin-top: 1rem; text-align: center; }
+  .auth-msg.error { background: rgba(255,124,124,0.12); color: var(--stop); border: 1px solid rgba(255,124,124,0.25); }
+  .auth-msg.success { background: rgba(100,217,168,0.1); color: var(--pacer); border: 1px solid rgba(100,217,168,0.2); }
+
+  /* DASHBOARD */
+  .dash { display: flex; flex-direction: column; min-height: 100vh; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 10; }
+  .topbar-brand { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--text); }
+  .topbar-right { display: flex; align-items: center; gap: 1rem; }
+  .topbar-user { font-size: 0.82rem; color: var(--text2); }
+  .btn-logout { padding: 0.4rem 0.85rem; background: transparent; border: 1px solid var(--border2); border-radius: 6px; color: var(--text2); font-family: 'Outfit', sans-serif; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+  .btn-logout:hover { color: var(--text); border-color: var(--text2); }
+
+  .dash-body { padding: 1.75rem 1.5rem 3rem; max-width: 900px; margin: 0 auto; width: 100%; }
+
+  /* MODE TOGGLE */
+  .mode-toggle { display: flex; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 5px; margin-bottom: 2rem; width: fit-content; }
+  .mode-btn { padding: 0.55rem 1.4rem; border-radius: 8px; border: none; background: transparent; cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+  .mode-btn.active-pacer { background: var(--pacer); color: #0a1f18; }
+  .mode-btn.active-stop { background: var(--accent2); color: #fff; }
+  .mode-btn:not(.active-pacer):not(.active-stop) { color: var(--text2); }
+  .mode-btn:not(.active-pacer):not(.active-stop):hover { color: var(--text); }
+
+  /* PACER */
+  .pacer-panel { display: flex; flex-direction: column; align-items: center; gap: 2rem; }
+  .pacer-bar-wrap { position: relative; width: 90px; height: 220px; background: var(--bg3); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 0 24px rgba(100,217,168,0.07); }
+  .pacer-bar-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(to top, #0d6e52, var(--pacer)); border-radius: 0 0 15px 15px; animation-name: pacer-breathe; animation-timing-function: ease-in-out; animation-iteration-count: infinite; animation-play-state: paused; }
+  .pacer-bar-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+  .pacer-phase { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--text); text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+  .pacer-count { font-family: 'DM Mono', monospace; font-size: 2rem; color: var(--pacer); font-weight: 500; line-height: 1; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+  .pacer-sub { font-size: 0.65rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.2rem; }
+  .pacer-phases { display: flex; gap: 0.75rem; }
+  .phase-pill { padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500; background: var(--bg3); color: var(--text3); border: 1px solid var(--border); transition: all 0.3s; }
+  .phase-pill.active { background: rgba(100,217,168,0.15); color: var(--pacer); border-color: rgba(100,217,168,0.3); }
+  .pacer-meta { font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--text2); text-align: center; }
+  .pacer-meta span { color: var(--pacer); }
+  .ctrl-row { display: flex; gap: 0.75rem; }
+  .ctrl-btn { padding: 0.65rem 1.5rem; border-radius: 8px; border: none; font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .ctrl-btn.start { background: var(--pacer); color: #0a1f18; }
+  .ctrl-btn.stop-b { background: rgba(255,124,124,0.15); color: var(--stop); border: 1px solid rgba(255,124,124,0.3); }
+  .ctrl-btn.reset { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+  .ctrl-btn:hover { opacity: 0.85; }
+
+  /* STOPWATCH */
+  .sw-panel { display: flex; flex-direction: column; align-items: center; gap: 2rem; }
+  .sw-display { font-family: 'DM Mono', monospace; font-size: 4.5rem; color: var(--text); letter-spacing: -0.03em; line-height: 1; }
+  .sw-display span { color: var(--accent); }
+  .sw-label { font-size: 0.72rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+  .ctrl-btn.sw-start { background: var(--accent2); color: #fff; }
+  .ctrl-btn.sw-stop { background: rgba(255,124,124,0.15); color: var(--stop); border: 1px solid rgba(255,124,124,0.3); }
+
+  /* STATS */
+  .stats-section { margin-top: 2.5rem; }
+  .stats-title { font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: var(--text); margin-bottom: 1.25rem; }
+  .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.75rem; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.1rem; }
+  .stat-card-label { font-size: 0.72rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.4rem; }
+  .stat-card-val { font-family: 'DM Mono', monospace; font-size: 1.75rem; color: var(--pacer); font-weight: 500; }
+  .stat-card-unit { font-size: 0.75rem; color: var(--text3); margin-top: 0.2rem; }
+
+  /* CONTRIBUTION GRAPH */
+  .contrib-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.35rem; margin-bottom: 1.75rem; }
+  .contrib-title { font-size: 0.75rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 1rem; }
+  .contrib-grid { display: flex; gap: 3px; }
+  .contrib-col { display: flex; flex-direction: column; gap: 3px; }
+  .contrib-cell { width: 12px; height: 12px; border-radius: 2px; transition: opacity 0.2s; cursor: default; }
+  .contrib-cell:hover { opacity: 0.8; }
+  .contrib-legend { display: flex; align-items: center; gap: 6px; margin-top: 0.85rem; font-size: 0.72rem; color: var(--text3); }
+  .legend-cell { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* SESSION TABLE */
+  .sessions-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  .sessions-table th { text-align: left; padding: 0.5rem 0.75rem; color: var(--text3); font-weight: 500; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .sessions-table td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); color: var(--text2); font-family: 'DM Mono', monospace; font-size: 0.82rem; }
+  .sessions-table tr:last-child td { border-bottom: none; }
+  .sessions-table tr:hover td { background: var(--bg2); }
+  .badge { display: inline-flex; padding: 0.2rem 0.55rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600; font-family: 'Outfit', sans-serif; }
+  .badge.pacer { background: rgba(100,217,168,0.12); color: var(--pacer); }
+  .badge.stopwatch { background: rgba(124,159,255,0.12); color: var(--accent); }
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .empty-state { text-align: center; padding: 2.5rem; color: var(--text3); font-size: 0.875rem; }
+
+  .saved-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 0.65rem 1rem; font-size: 0.82rem; color: var(--text); display: flex; align-items: center; gap: 0.5rem; z-index: 999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
+  .saved-toast.show { opacity: 1; transform: translateY(0); }
+  .toast-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--pacer); }
+
+  .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+
+  .pacer-settings { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .ps-field { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+  .ps-field label { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+  .ps-field input { width: 60px; padding: 0.35rem 0.5rem; background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.9rem; text-align: center; outline: none; }
+</style>
+</head>
+<body>
+<div class="app" id="root"></div>
+<div class="saved-toast" id="toast"><span class="toast-dot"></span><span id="toast-msg">Session saved</span></div>
+
+<script>
+const DB_KEY = 'mindpace_db';
+
+function getDB() {
+  try { return JSON.parse(localStorage.getItem(DB_KEY)) || { users: [], sessions: [] }; } catch { return { users: [], sessions: [] }; }
+}
+function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+function hashPass(p) {
+  let h = 0; for (let i = 0; i < p.length; i++) { h = ((h << 5) - h) + p.charCodeAt(i); h |= 0; }
+  return 'h_' + Math.abs(h).toString(16);
+}
+
+function fmtDuration(secs) {
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function fmtMins(secs) { return (secs / 60).toFixed(1); }
+
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  const dot = t.querySelector('.toast-dot');
+  document.getElementById('toast-msg').textContent = msg;
+  dot.style.background = color || 'var(--pacer)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+let currentUser = null;
+
+function renderApp() {
+  if (!currentUser) { renderAuth(); } else { renderDash(); }
+}
+
+/* ====== AUTH ====== */
+function renderAuth(mode = 'login', msg = '', msgType = '') {
+  document.getElementById('root').innerHTML = `
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <h1>MindPace</h1>
+        <p>Mindful breathing & focus</p>
+      </div>
+      <div class="auth-tabs">
+        <div class="auth-tab ${mode==='login'?'active':''}" onclick="renderAuth('login')">Sign in</div>
+        <div class="auth-tab ${mode==='register'?'active':''}" onclick="renderAuth('register')">Register</div>
+      </div>
+      ${mode==='register'?`<div class="field"><label>Name</label><input id="auth-name" placeholder="Your name" autocomplete="off"/></div>`:''}
+      <div class="field"><label>Username</label><input id="auth-user" placeholder="username" autocomplete="off"/></div>
+      <div class="field"><label>Password</label><input id="auth-pass" type="password" placeholder="password"/></div>
+      <button class="btn-primary" onclick="handleAuth('${mode}')">${mode==='login'?'Sign in':'Create account'}</button>
+      ${msg ? `<div class="auth-msg ${msgType}">${msg}</div>` : ''}
+    </div>
+  </div>`;
+  setTimeout(() => {
+    const u = document.getElementById('auth-user');
+    if (u) { u.addEventListener('keydown', e => { if (e.key === 'Enter') handleAuth(mode); }); }
+    const p = document.getElementById('auth-pass');
+    if (p) { p.addEventListener('keydown', e => { if (e.key === 'Enter') handleAuth(mode); }); }
+  }, 50);
+}
+
+function handleAuth(mode) {
+  const db = getDB();
+  const username = (document.getElementById('auth-user')?.value || '').trim().toLowerCase();
+  const password = document.getElementById('auth-pass')?.value || '';
+  if (!username || !password) { renderAuth(mode, 'Please fill in all fields.', 'error'); return; }
+
+  if (mode === 'login') {
+    const u = db.users.find(u => u.username === username && u.password === hashPass(password));
+    if (!u) { renderAuth(mode, 'Invalid username or password.', 'error'); return; }
+    currentUser = u;
+    renderDash();
+  } else {
+    const name = (document.getElementById('auth-name')?.value || '').trim() || username;
+    if (db.users.find(u => u.username === username)) { renderAuth(mode, 'Username already taken.', 'error'); return; }
+    if (password.length < 6) { renderAuth(mode, 'Password must be at least 6 characters.', 'error'); return; }
+    const u = { id: Date.now().toString(), username, name, password: hashPass(password), created: Date.now() };
+    db.users.push(u);
+    saveDB(db);
+    currentUser = u;
+    renderDash();
+  }
+}
+
+/* ====== DASHBOARD STATE ====== */
+let activeMode = 'pacer';
+let pacerRunning = false, pacerElapsed = 0, pacerTimer = null;
+let pacerPhase = 0, pacerPhaseTime = 0;
+let pacerInhale = 5, pacerHold = 0, pacerExhale = 5, pacerHold2 = 0;
+const PHASES = ['Inhale','Hold','Exhale','Hold'];
+let swRunning = false, swElapsed = 0, swTimer = null;
+let sessionDirty = false;
+
+function getPhaseDurations() { return [pacerInhale, pacerHold, pacerExhale, pacerHold2]; }
+function getCycleDuration() { return getPhaseDurations().reduce((a,b) => a+b, 0); }
+
+function pacerPhaseColor(p) {
+  return ['var(--pacer)','var(--amber)','var(--accent)','var(--amber)'][p];
+}
+
+function computeStats() {
+  const db = getDB();
+  const sessions = db.sessions.filter(s => s.userId === currentUser.id && s.type === 'pacer');
+  const now = Date.now();
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const weekStart = new Date(todayStart); weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+
+  const todaySecs = sessions.filter(s => s.ts >= todayStart.getTime()).reduce((a,s) => a+s.duration, 0);
+  const weekSecs = sessions.filter(s => s.ts >= weekStart.getTime()).reduce((a,s) => a+s.duration, 0);
+  const allSecs = sessions.reduce((a,s) => a+s.duration, 0);
+  return { today: todaySecs, week: weekSecs, all: allSecs };
+}
+
+function computeContrib() {
+  const db = getDB();
+  const sessions = db.sessions.filter(s => s.userId === currentUser.id && s.type === 'pacer');
+  const map = {};
+  sessions.forEach(s => {
+    const d = new Date(s.ts);
+    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    map[key] = (map[key] || 0) + s.duration;
+  });
+  return map;
+}
+
+function saveSession(type, durationSecs) {
+  if (durationSecs < 3) return;
+  const db = getDB();
+  db.sessions.push({ id: Date.now().toString(), userId: currentUser.id, ts: Date.now(), duration: durationSecs, type });
+  saveDB(db);
+  showToast(`Session saved - ${fmtDuration(durationSecs)}`, type === 'pacer' ? 'var(--pacer)' : 'var(--accent)');
+}
+
+function getAllSessions() {
+  const db = getDB();
+  return db.sessions.filter(s => s.userId === currentUser.id).sort((a,b) => b.ts - a.ts);
+}
+
+/* ====== RENDER DASH ====== */
+function renderDash() {
+  clearTimers();
+  const el = document.getElementById('root');
+  el.innerHTML = `
+  <div class="dash">
+    <div class="topbar">
+      <div class="topbar-brand">MindPace</div>
+      <div class="topbar-right">
+        <span class="topbar-user">${currentUser.name || currentUser.username}</span>
+        <button class="btn-logout" onclick="handleLogout()">Sign out</button>
+      </div>
+    </div>
+    <div class="dash-body">
+      <div class="mode-toggle">
+        <button class="mode-btn ${activeMode==='pacer'?'active-pacer':''}" id="btn-pacer" onclick="switchMode('pacer')">
+          Breath Pacer
+        </button>
+        <button class="mode-btn ${activeMode==='sw'?'active-stop':''}" id="btn-sw" onclick="switchMode('sw')">
+          Stopwatch
+        </button>
+      </div>
+
+      <div id="tool-area"></div>
+      <div class="divider"></div>
+      <div id="stats-area"></div>
+    </div>
+  </div>`;
+
+  renderTool();
+  renderStats();
+}
+
+function renderTool() {
+  const el = document.getElementById('tool-area');
+  if (!el) return;
+  if (activeMode === 'pacer') renderPacerTool(el);
+  else renderSwTool(el);
+}
+
+/* ====== PACER TOOL ====== */
+let pacerStyleEl = null;
+
+function applyPacerKeyframes() {
+  if (!pacerStyleEl) {
+    pacerStyleEl = document.createElement('style');
+    document.head.appendChild(pacerStyleEl);
+  }
+  const total = pacerInhale + pacerHold + pacerExhale + pacerHold2;
+  if (total <= 0) return;
+  const pInhaleEnd = (pacerInhale / total) * 100;
+  const pHoldTopEnd = ((pacerInhale + pacerHold) / total) * 100;
+  const pExhaleEnd = ((pacerInhale + pacerHold + pacerExhale) / total) * 100;
+  pacerStyleEl.innerHTML = `@keyframes pacer-breathe {
+    0%   { height: 0%; }
+    ${pInhaleEnd.toFixed(2)}% { height: 100%; }
+    ${pHoldTopEnd.toFixed(2)}% { height: 100%; }
+    ${pExhaleEnd.toFixed(2)}% { height: 0%; }
+    100% { height: 0%; }
+  }`;
+  const bar = document.getElementById('pacer-bar');
+  if (bar) {
+    bar.style.animationName = 'none';
+    void bar.offsetWidth;
+    bar.style.animationName = 'pacer-breathe';
+    bar.style.animationDuration = `${total}s`;
+    bar.style.animationPlayState = pacerRunning ? 'running' : 'paused';
+  }
+  const bpmEl = document.getElementById('pacer-bpm');
+  if (bpmEl) bpmEl.textContent = (60 / total).toFixed(1);
+}
+
+function renderPacerTool(el) {
+  const ph = PHASES[pacerPhase];
+  const phases = getPhaseDurations();
+  const phaseLen = phases[pacerPhase];
+
+  el.innerHTML = `
+  <div class="pacer-panel">
+    <div class="pacer-settings">
+      ${['Inhale','Hold','Exhale','Hold2'].map((n,i) => {
+        const vals = [pacerInhale,pacerHold,pacerExhale,pacerHold2];
+        const ids = ['pi','ph','pe','ph2'];
+        return `<div class="ps-field"><label>${n}</label><input id="${ids[i]}" type="number" min="0" max="20" step="0.1" value="${vals[i]}" ${pacerRunning?'disabled':''}></div>`;
+      }).join('')}
+    </div>
+    <div class="pacer-bar-wrap">
+      <div class="pacer-bar-fill" id="pacer-bar"></div>
+      <div class="pacer-bar-label">
+        <div class="pacer-phase" id="pacer-phase-lbl">${ph}</div>
+        <div class="pacer-count" id="pacer-count">${phaseLen - pacerPhaseTime}</div>
+        <div class="pacer-sub">seconds</div>
+      </div>
+    </div>
+    <div class="pacer-meta"><span id="pacer-bpm">${(60 / Math.max(1, getCycleDuration())).toFixed(1)}</span> breaths / min</div>
+    <div class="pacer-phases">
+      ${PHASES.map((p,i) => `<div class="phase-pill ${i===pacerPhase&&pacerRunning?'active':''}" id="ppill-${i}">${p}</div>`).join('')}
+    </div>
+    <div class="pacer-meta">Session: <span id="pacer-elapsed">${fmtDuration(pacerElapsed)}</span></div>
+    <div class="ctrl-row">
+      ${pacerRunning
+        ? `<button class="ctrl-btn stop-b" onclick="stopPacer()">Stop</button>`
+        : `<button class="ctrl-btn start" onclick="startPacer()">Start</button>`}
+      <button class="ctrl-btn reset" onclick="resetPacer()">Reset</button>
+    </div>
+  </div>`;
+
+  const onChange = () => {
+    pacerInhale  = Math.max(0, parseFloat(document.getElementById('pi')?.value)||0);
+    pacerHold    = Math.max(0, parseFloat(document.getElementById('ph')?.value)||0);
+    pacerExhale  = Math.max(0, parseFloat(document.getElementById('pe')?.value)||0);
+    pacerHold2   = Math.max(0, parseFloat(document.getElementById('ph2')?.value)||0);
+    applyPacerKeyframes();
+  };
+  ['pi','ph','pe','ph2'].forEach(id => document.getElementById(id)?.addEventListener('change', onChange));
+  applyPacerKeyframes();
+}
+
+function updatePacerUI() {
+  const phases = getPhaseDurations();
+  const ph = PHASES[pacerPhase];
+  const phaseLen = phases[pacerPhase];
+  const cnt = document.getElementById('pacer-count');
+  if (cnt) cnt.textContent = Math.max(0, phaseLen - pacerPhaseTime);
+  const elapsed = document.getElementById('pacer-elapsed');
+  if (elapsed) elapsed.textContent = fmtDuration(pacerElapsed);
+  PHASES.forEach((_,i) => {
+    const pill = document.getElementById(`ppill-${i}`);
+    if (pill) pill.className = `phase-pill ${i===pacerPhase&&pacerRunning?'active':''}`;
+  });
+  const phEl = document.getElementById('pacer-phase-lbl');
+  if (phEl) phEl.textContent = ph;
+}
+
+function startPacer() {
+  if (pacerRunning) return;
+  pacerRunning = true;
+  renderTool();
+  const bar = document.getElementById('pacer-bar');
+  if (bar) bar.style.animationPlayState = 'running';
+  pacerTimer = setInterval(() => {
+    pacerElapsed++;
+    const phases = getPhaseDurations();
+    pacerPhaseTime++;
+    if (pacerPhaseTime >= phases[pacerPhase]) {
+      pacerPhase = (pacerPhase + 1) % 4;
+      while (phases[pacerPhase] === 0) { pacerPhase = (pacerPhase + 1) % 4; }
+      pacerPhaseTime = 0;
+    }
+    updatePacerUI();
+  }, 1000);
+}
+
+function stopPacer() {
+  clearInterval(pacerTimer); pacerTimer = null; pacerRunning = false;
+  const bar = document.getElementById('pacer-bar');
+  if (bar) bar.style.animationPlayState = 'paused';
+  saveSession('pacer', pacerElapsed);
+  pacerElapsed = 0; pacerPhase = 0; pacerPhaseTime = 0;
+  renderTool(); renderStats();
+}
+
+function resetPacer() {
+  clearInterval(pacerTimer); pacerTimer = null; pacerRunning = false;
+  pacerElapsed = 0; pacerPhase = 0; pacerPhaseTime = 0;
+  renderTool();
+  const bar = document.getElementById('pacer-bar');
+  if (bar) { bar.style.animationName = 'none'; void bar.offsetWidth; bar.style.animationName = 'pacer-breathe'; bar.style.animationPlayState = 'paused'; }
+}
+
+/* ====== STOPWATCH TOOL ====== */
+function renderSwTool(el) {
+  const m = Math.floor(swElapsed / 60), s = swElapsed % 60;
+  el.innerHTML = `
+  <div class="sw-panel">
+    <div class="sw-display">${String(m).padStart(2,'0')}<span>:</span>${String(s).padStart(2,'0')}</div>
+    <div class="sw-label">minutes : seconds</div>
+    <div class="ctrl-row">
+      ${swRunning
+        ? `<button class="ctrl-btn sw-stop" onclick="stopSw()">Stop</button>`
+        : `<button class="ctrl-btn sw-start" onclick="startSw()">Start</button>`}
+      <button class="ctrl-btn reset" onclick="resetSw()">Reset</button>
+    </div>
+  </div>`;
+}
+
+function updateSwUI() {
+  const m = Math.floor(swElapsed / 60), s = swElapsed % 60;
+  const el = document.querySelector('.sw-display');
+  if (el) el.innerHTML = `${String(m).padStart(2,'0')}<span style="color:var(--accent)">:</span>${String(s).padStart(2,'0')}`;
+}
+
+function startSw() {
+  if (swRunning) return;
+  swRunning = true;
+  renderTool();
+  swTimer = setInterval(() => { swElapsed++; updateSwUI(); }, 1000);
+}
+
+function stopSw() {
+  clearInterval(swTimer); swTimer = null; swRunning = false;
+  saveSession('stopwatch', swElapsed);
+  swElapsed = 0;
+  renderTool(); renderStats();
+}
+
+function resetSw() {
+  clearInterval(swTimer); swTimer = null; swRunning = false;
+  swElapsed = 0; renderTool();
+}
+
+function clearTimers() {
+  clearInterval(pacerTimer); clearInterval(swTimer);
+  pacerTimer = null; swTimer = null;
+  pacerRunning = false; swRunning = false;
+}
+
+/* ====== MODE SWITCH ====== */
+function switchMode(m) {
+  clearTimers();
+  activeMode = m; renderTool();
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.className = 'mode-btn';
+    if (b.id === 'btn-pacer' && m === 'pacer') b.className = 'mode-btn active-pacer';
+    if (b.id === 'btn-sw' && m === 'sw') b.className = 'mode-btn active-stop';
+  });
+}
+
+/* ====== STATS ====== */
+function renderStats() {
+  const el = document.getElementById('stats-area');
+  if (!el) return;
+  const stats = computeStats();
+  const contrib = computeContrib();
+  const sessions = getAllSessions();
+
+  // Build 18 weeks of contribution grid
+  const now = new Date();
+  const weeks = 18;
+  const today = new Date(now); today.setHours(0,0,0,0);
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - (weeks * 7 - 1));
+  // Align to Sunday
+  while (startDate.getDay() !== 0) startDate.setDate(startDate.getDate() - 1);
+
+  let cols = [];
+  let d = new Date(startDate);
+  while (d <= today) {
+    let col = [];
+    for (let i = 0; i < 7; i++) {
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      const secs = contrib[key] || 0;
+      const future = d > today;
+      col.push({ date: new Date(d), secs, future });
+      d.setDate(d.getDate() + 1);
+    }
+    cols.push(col);
+  }
+
+  function cellColor(secs, future) {
+    if (future) return 'var(--bg3)';
+    if (secs === 0) return 'var(--bg3)';
+    if (secs < 120) return 'rgba(100,217,168,0.2)';
+    if (secs < 300) return 'rgba(100,217,168,0.4)';
+    if (secs < 600) return 'rgba(100,217,168,0.65)';
+    return 'var(--pacer)';
+  }
+
+  const monthLabels = [];
+  let lastMonth = -1;
+  cols.forEach((col, ci) => {
+    const m = col[0].date.getMonth();
+    if (m !== lastMonth) { monthLabels.push({ ci, label: col[0].date.toLocaleString('default', {month:'short'}) }); lastMonth = m; }
+    else monthLabels.push({ ci, label: '' });
+  });
+
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  el.innerHTML = `
+  <div class="stats-title">Breath Pacer Summary</div>
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="stat-card-label">Today</div>
+      <div class="stat-card-val">${fmtMins(stats.today)}</div>
+      <div class="stat-card-unit">minutes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">This Week</div>
+      <div class="stat-card-val" style="color:var(--amber)">${fmtMins(stats.week)}</div>
+      <div class="stat-card-unit">minutes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">All Time</div>
+      <div class="stat-card-val" style="color:var(--accent)">${fmtMins(stats.all)}</div>
+      <div class="stat-card-unit">minutes</div>
+    </div>
+  </div>
+
+  <div class="contrib-wrap">
+    <div class="contrib-title">Pacer activity - last ${weeks} weeks</div>
+    <div style="overflow-x:auto;">
+      <div style="display:flex;gap:3px;margin-bottom:4px;padding-left:28px;">
+        ${monthLabels.map(ml => `<div style="width:12px;font-size:9px;color:var(--text3);white-space:nowrap;">${ml.label}</div>`).join('')}
+      </div>
+      <div style="display:flex;gap:3px;">
+        <div style="display:flex;flex-direction:column;gap:3px;margin-right:4px;">
+          ${DAYS.map((d,i) => `<div style="height:12px;font-size:9px;color:var(--text3);line-height:12px;">${i%2===1?d.slice(0,3):''}</div>`).join('')}
+        </div>
+        <div class="contrib-grid">
+          ${cols.map(col => `
+            <div class="contrib-col">
+              ${col.map(cell => `<div class="contrib-cell" style="background:${cellColor(cell.secs, cell.future)};" title="${cell.date.toLocaleDateString()} - ${fmtMins(cell.secs)} min"></div>`).join('')}
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="contrib-legend">
+      Less
+      ${[0,1,2,3,4].map(i => {
+        const c = ['var(--bg3)','rgba(100,217,168,0.2)','rgba(100,217,168,0.4)','rgba(100,217,168,0.65)','var(--pacer)'][i];
+        return `<div class="legend-cell" style="background:${c}"></div>`;
+      }).join('')}
+      More
+    </div>
+  </div>
+
+  <div class="stats-title">Session History</div>
+  <div class="table-wrap">
+    ${sessions.length === 0 ? '<div class="empty-state">No sessions yet - start a pacer or stopwatch session above.</div>' : `
+    <table class="sessions-table">
+      <thead><tr>
+        <th>Date</th><th>Time</th><th>Type</th><th>Duration</th>
+      </tr></thead>
+      <tbody>
+        ${sessions.slice(0,50).map(s => {
+          const dt = new Date(s.ts);
+          const date = dt.toLocaleDateString();
+          const time = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+          return `<tr>
+            <td>${date}</td>
+            <td>${time}</td>
+            <td><span class="badge ${s.type}">${s.type === 'pacer' ? 'Pacer' : 'Stopwatch'}</span></td>
+            <td>${fmtDuration(s.duration)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`}
+  </div>`;
+}
+
+function handleLogout() {
+  clearTimers();
+  currentUser = null;
+  pacerElapsed = 0; pacerPhase = 0; pacerPhaseTime = 0;
+  swElapsed = 0;
+  renderApp();
+}
+
+renderApp();
+</script>
+</body>
+</html>
